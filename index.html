@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>經濟部 iPAS 初級淨零碳規劃管理師｜互動模擬題庫系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+    body { font-family: 'Noto Sans TC', sans-serif; background-color: #f3f7f5; }
+    .option-card { transition: all 0.2s ease; }
+    .option-card:hover:not(.disabled) { transform: translateY(-1px); border-color: #10b981; background-color: #ecfdf5; }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 text-white shadow-lg">
+    <div class="max-w-5xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 text-emerald-300 text-xs font-bold tracking-wider uppercase">
+          <span>iPAS 經濟部產業人才能力鑑定</span>
+          <span>•</span>
+          <span>模擬測驗題庫系統</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-black mt-1 tracking-tight">初級淨零碳規劃管理師</h1>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span id="bank-status-badge" class="bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 text-xs px-3 py-1.5 rounded-full">
+          題庫載入中...
+        </span>
+        <button onclick="toggleBankModal()" class="bg-white/15 hover:bg-white/25 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5">
+          <span>⚙️ 題庫管理 / 匯入 JSON</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6">
+
+    <!-- Setup Screen -->
+    <section id="setup-screen" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+      <div class="border-b border-slate-100 pb-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">測驗參數設定</h2>
+          <p class="text-sm text-slate-500 mt-1">支援自動載入同目錄 subject1.json 與 subject2.json，及動態計算題練習</p>
+        </div>
+        <div class="flex gap-3 text-center">
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2">
+            <div class="text-xs text-emerald-700 font-medium">科目一題數</div>
+            <div id="s1-count" class="text-lg font-black text-emerald-800">0</div>
+          </div>
+          <div class="bg-teal-50 border border-teal-200 rounded-xl px-4 py-2">
+            <div class="text-xs text-teal-700 font-medium">科目二題數</div>
+            <div id="s2-count" class="text-lg font-black text-teal-800">0</div>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
+            <div class="text-xs text-amber-700 font-medium">錯題本</div>
+            <div id="wrong-count" class="text-lg font-black text-amber-700">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Scope Selection -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">1. 選擇練習範圍</label>
+          <div class="grid grid-cols-1 gap-2.5" id="scope-options">
+            <label class="flex items-center p-3.5 border rounded-xl cursor-pointer hover:bg-slate-50 has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/60">
+              <input type="radio" name="scope" value="all" checked class="accent-emerald-600 w-4 h-4 mr-3">
+              <div>
+                <div class="font-bold text-sm text-slate-800">全真綜合模擬（科目一 ＋ 科目二）</div>
+                <div class="text-xs text-slate-500">涵蓋基礎概論與盤查實務，依官方雙科及格標準計分</div>
+              </div>
+            </label>
+            <label class="flex items-center p-3.5 border rounded-xl cursor-pointer hover:bg-slate-50 has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/60">
+              <input type="radio" name="scope" value="1" class="accent-emerald-600 w-4 h-4 mr-3">
+              <div>
+                <div class="font-bold text-sm text-slate-800">科目一：淨零碳規劃管理基礎概論</div>
+                <div class="text-xs text-slate-500">國際公約、氣候變遷因應法、碳費、CBAM、SBTi、TCFD</div>
+              </div>
+            </label>
+            <label class="flex items-center p-3.5 border rounded-xl cursor-pointer hover:bg-slate-50 has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/60">
+              <input type="radio" name="scope" value="2" class="accent-emerald-600 w-4 h-4 mr-3">
+              <div>
+                <div class="font-bold text-sm text-slate-800">科目二：淨零碳盤查規範與程序概要</div>
+                <div class="text-xs text-slate-500">ISO 14064-1、六大類別、GWP 計算、基準年、ISO 14067</div>
+              </div>
+            </label>
+            <label class="flex items-center p-3.5 border rounded-xl cursor-pointer hover:bg-slate-50 has-[:checked]:border-amber-600 has-[:checked]:bg-amber-50/60">
+              <input type="radio" name="scope" value="wrong" class="accent-amber-600 w-4 h-4 mr-3">
+              <div>
+                <div class="font-bold text-sm text-amber-900">專攻錯題複習模式</div>
+                <div class="text-xs text-amber-700">針對歷史答錯題目進行強化訓練</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Mode & Count -->
+        <div class="flex flex-col justify-between space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">2. 回饋模式</label>
+            <div class="grid grid-cols-2 gap-2.5">
+              <label class="flex flex-col p-3.5 border rounded-xl cursor-pointer hover:bg-slate-50 has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/60">
+                <div class="flex items-center gap-2">
+                  <input type="radio" name="mode" value="instant" checked class="accent-emerald-600 w-4 h-4">
+                  <span class="font-bold text-sm">即時解析模式</span>
+                </div>
+                <span class="text-xs text-slate-500 mt-1">作答後立即顯示對錯與詳解，適合平時刷題</span>
+              </label>
+              <label class="flex flex-col p-3.5 border rounded-xl cursor-pointer hover:bg-slate-50 has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/60">
+                <div class="flex items-center gap-2">
+                  <input type="radio" name="mode" value="exam" class="accent-emerald-600 w-4 h-4">
+                  <span class="font-bold text-sm">模擬考模式</span>
+                </div>
+                <span class="text-xs text-slate-500 mt-1">交卷後統一計分並檢視所有題目詳解</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">3. 出題數量與動態計算題</label>
+            <div class="flex flex-wrap items-center gap-3">
+              <select id="question-limit" class="border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium bg-white focus:outline-none focus:border-emerald-600">
+                <option value="10">10 題（快速練習）</option>
+                <option value="20" selected>20 題（標準練習）</option>
+                <option value="50">50 題（單科正式題數）</option>
+                <option value="100">100 題（全真雙科模擬）</option>
+                <option value="9999">全部題庫</option>
+              </select>
+              <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer bg-slate-100 px-3.5 py-2.5 rounded-xl">
+                <input type="checkbox" id="include-dynamic" checked class="accent-emerald-600 w-4 h-4">
+                <span>含動態數字計算題</span>
+              </label>
+            </div>
+          </div>
+
+          <button onclick="startQuiz()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md hover:shadow-lg transition text-base">
+            開始測驗 →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quiz Screen -->
+    <section id="quiz-screen" class="hidden space-y-5">
+      <!-- Top Bar -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <span id="q-badge" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">科目一</span>
+          <span id="q-category" class="text-xs text-slate-500 font-medium">分類</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="text-sm font-bold text-slate-700">
+            進度：<span id="q-progress" class="text-emerald-700">1 / 20</span>
+          </div>
+          <div class="text-sm font-mono bg-slate-100 px-3 py-1 rounded-lg text-slate-700" id="timer-display">00:00</div>
+          <button onclick="quitQuiz()" class="text-xs text-slate-400 hover:text-rose-600 font-medium">結束返回</button>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+        <div id="progress-bar" class="bg-emerald-600 h-full transition-all duration-300" style="width: 5%"></div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <div class="text-xs font-bold text-slate-400 mb-2" id="q-id">題號：S1-001</div>
+        <h3 id="q-text" class="text-lg sm:text-xl font-bold text-slate-900 leading-relaxed mb-6">題目載入中...</h3>
+
+        <div id="options-container" class="space-y-3"></div>
+
+        <!-- Instant Explanation Box -->
+        <div id="explanation-box" class="hidden mt-6 p-5 rounded-xl bg-slate-50 border border-slate-200">
+          <div id="answer-verdict" class="font-bold text-base mb-1.5"></div>
+          <p id="explanation-text" class="text-sm text-slate-700 leading-relaxed"></p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="mt-8 pt-5 border-t border-slate-100 flex items-center justify-between">
+          <button id="prev-btn" onclick="prevQuestion()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40">
+            ← 上一題
+          </button>
+          <div class="flex gap-2">
+            <button id="next-btn" onclick="nextQuestion()" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-sm">
+              下一題 →
+            </button>
+            <button id="submit-btn" onclick="finishQuiz()" class="hidden px-6 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-sm font-bold shadow-sm">
+              交卷看成績 ✓
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Result Screen -->
+    <section id="result-screen" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 text-center">
+        <div id="pass-badge" class="inline-block px-4 py-1.5 rounded-full text-sm font-black mb-3">成績結算</div>
+        <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-2">
+          總平均：<span id="total-score" class="text-emerald-600">0</span> 分
+        </h2>
+        <p id="pass-desc" class="text-sm text-slate-500 mb-6">iPAS 及格標準：兩科平均達 70 分，且單科不低於 60 分</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto mb-6">
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div class="text-xs text-slate-500">科目一得分</div>
+            <div id="res-s1-score" class="text-xl font-black text-slate-800 mt-1">-</div>
+          </div>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div class="text-xs text-slate-500">科目二得分</div>
+            <div id="res-s2-score" class="text-xl font-black text-slate-800 mt-1">-</div>
+          </div>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div class="text-xs text-slate-500">答對題數 / 耗時</div>
+            <div id="res-summary" class="text-xl font-black text-slate-800 mt-1">-</div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-3">
+          <button onclick="resetToSetup()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm">
+            返回重新測驗
+          </button>
+          <button onclick="copyWrongNotes()" class="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-sm">
+            📋 一鍵複製本次錯題筆記
+          </button>
+        </div>
+      </div>
+
+      <!-- Review List -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <h3 class="text-lg font-bold text-slate-900 mb-4">試題詳解總覽</h3>
+        <div id="review-container" class="space-y-4"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bank Management Modal -->
+  <div id="bank-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3 mb-4">
+        <h3 class="text-lg font-bold text-slate-900">題庫管理與外部 JSON 匯入</h3>
+        <button onclick="toggleBankModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+      </div>
+
+      <div class="space-y-4 text-sm">
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+          <div class="font-bold text-emerald-900 mb-1">自動連線狀態（同目錄 JSON 檔）</div>
+          <div id="remote-log" class="text-xs text-emerald-800 space-y-1">尚未檢查</div>
+          <button onclick="loadDefaultRemoteBanks()" class="mt-2 bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-emerald-800">
+            重新讀取 ./subject1.json 與 ./subject2.json
+          </button>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">手動貼上 JSON 題庫陣列擴充（自動儲存於瀏覽器）</label>
+          <textarea id="json-paste-input" rows="5" placeholder='貼上格式如：[{"id":"S1-011","subject":1,"category":"碳費","question":"...","options":["A","B","C","D"],"answer":0,"explanation":"..."}]' class="w-full border border-slate-300 rounded-xl p-3 font-mono text-xs focus:outline-none focus:border-emerald-600"></textarea>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <button onclick="importPastedJson()" class="bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs px-4 py-2 rounded-lg">
+              匯入並合併至題庫
+            </button>
+            <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-4 py-2 rounded-lg cursor-pointer">
+              上傳 .json 檔案
+              <input type="file" accept=".json" onchange="importJsonFile(event)" class="hidden">
+            </label>
+            <button onclick="clearCustomBank()" class="text-rose-600 hover:bg-rose-50 font-bold text-xs px-3 py-2 rounded-lg ml-auto">
+              清除本機快取題庫
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Built-in fallback starter bank
+    const STARTER_BANK = [
+      {
+        id: "BASE-1",
+        subject: 1,
+        category: "國際公約與倡議",
+        question: "2015 年《巴黎協定》設定將全球平均氣溫升幅控制在相較於工業化前水準低於 2°C 之內，並努力限制在多少攝氏度之內？",
+        options: ["1.0°C", "1.5°C", "2.5°C", "3.0°C"],
+        answer: 1,
+        explanation: "《巴黎協定》第 2 條明定將全球平均氣溫升幅控制在低於 2°C 之內，並努力限制在 1.5°C 之內。"
+      },
+      {
+        id: "BASE-2",
+        subject: 2,
+        category: "ISO 14064-1 盤查程序",
+        question: "企業執行 ISO 14064-1 組織型溫室氣體盤查的標準五大步驟口訣「邊、源、算、報、查」中，第一步「邊」是指確立哪兩項邊界？",
+        options: ["組織邊界與報告邊界", "地理邊界與行政邊界", "財務邊界與稅務邊界", "上游邊界與下游邊界"],
+        answer: 0,
+        explanation: "ISO 14064-1 盤查第一步「邊」是指設定「組織邊界」與「報告邊界」。"
+      }
+    ];
+
+    let questionBank = [];
+    let currentQuiz = [];
+    let userAnswers = [];
+    let currentIndex = 0;
+    let quizMode = 'instant';
+    let timerInterval = null;
+    let secondsElapsed = 0;
+    let wrongIds = new Set(JSON.parse(localStorage.getItem('ipas_wrong_ids') || '[]'));
+
+    // Generate dynamic calculation questions
+    function generateDynamicQuestions() {
+      const kwh = (Math.floor(Math.random() * 9) + 1) * 50000; // 50,000 ~ 450,000
+      const ef = 0.494;
+      const elecTons = Number(((kwh * ef) / 1000).toFixed(2));
+      const elecOpts = [
+        `${Number((elecTons / 10).toFixed(2))} 公噸 CO2e`,
+        `${elecTons} 公噸 CO2e`,
+        `${Number((elecTons * 10).toFixed(1))} 公噸 CO2e`,
+        `${(kwh * ef).toLocaleString()} 公噸 CO2e`
+      ];
+
+      const refKg = Math.floor(Math.random() * 8) + 2; // 2 ~ 9 kg
+      const gwp = 2088; // R-410A
+      const refTons = Number(((refKg * gwp) / 1000).toFixed(3));
+      const refOpts = [
+        `${refTons} 公噸 CO2e`,
+        `${Number((refTons * 10).toFixed(2))} 公噸 CO2e`,
+        `${Number((refKg * gwp).toFixed(0))} 公噸 CO2e`,
+        `${Number((refTons / 10).toFixed(4))} 公噸 CO2e`
+      ];
+
+      return [
+        {
+          id: "DYN-ELEC",
+          subject: 2,
+          category: "動態計算題｜外購電力",
+          question: `【動態計算】某廠區年度外購電力為 ${kwh.toLocaleString()} 度（kWh），若該年度電力排碳係數為 ${ef} kg CO2e/度，則該廠類別 2 溫室氣體排放量為多少？`,
+          options: elecOpts,
+          answer: 1,
+          explanation: `計算式：${kwh.toLocaleString()} 度 × ${ef} kg CO2e/度 ÷ 1,000（公斤換算公噸）= ${elecTons} 公噸 CO2e。`
+        },
+        {
+          id: "DYN-REF",
+          subject: 2,
+          category: "動態計算題｜冷媒逸散",
+          question: `【動態計算】某企業空調設備年度維護時補充 R-410A 冷媒共 ${refKg} 公斤，已知 R-410A 之 GWP 值為 ${gwp}，請問該冷媒逸散產生多少二氧化碳當量？`,
+          options: refOpts,
+          answer: 0,
+          explanation: `計算式：${refKg} kg × ${gwp}（GWP）÷ 1,000 = ${refTons} 公噸 CO2e。`
+        }
+      ];
+    }
+
+    function mergeQuestions(newItems) {
+      const map = new Map(questionBank.map(q => [q.id, q]));
+      newItems.forEach(item => {
+        if (item && item.id && item.question && Array.isArray(item.options)) {
+          map.set(item.id, item);
+        }
+      });
+      questionBank = Array.from(map.values());
+      updateStats();
+    }
+
+    function updateStats() {
+      const s1 = questionBank.filter(q => Number(q.subject) === 1).length;
+      const s2 = questionBank.filter(q => Number(q.subject) === 2).length;
+      document.getElementById('s1-count').textContent = s1;
+      document.getElementById('s2-count').textContent = s2;
+      document.getElementById('wrong-count').textContent = wrongIds.size;
+      document.getElementById('bank-status-badge').textContent = `已載入 ${s1 + s2} 題（科一 ${s1} / 科二 ${s2}）`;
+    }
+
+    async function loadDefaultRemoteBanks() {
+      const logEl = document.getElementById('remote-log');
+      let logs = [];
+      for (const file of ['./subject1.json', './subject2.json']) {
+        try {
+          const res = await fetch(file + '?t=' + Date.now());
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            mergeQuestions(data);
+            logs.push(`✅ ${file}：成功載入 ${data.length} 題`);
+          }
+        } catch (err) {
+          logs.push(`⚠️ ${file}：未偵測到或尚未建立（${err.message}）`);
+        }
+      }
+      logEl.innerHTML = logs.join('<br>');
+    }
+
+    function toggleBankModal() {
+      document.getElementById('bank-modal').classList.toggle('hidden');
+    }
+
+    function importPastedJson() {
+      try {
+        const raw = document.getElementById('json-paste-input').value.trim();
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error("最外層必須是 JSON 陣列 [ ... ]");
+        const existingCustom = JSON.parse(localStorage.getItem('ipas_custom_bank') || '[]');
+        const combined = [...existingCustom, ...parsed];
+        localStorage.setItem('ipas_custom_bank', JSON.stringify(combined));
+        mergeQuestions(parsed);
+        alert(`成功匯入 ${parsed.length} 題！`);
+        document.getElementById('json-paste-input').value = '';
+      } catch (e) {
+        alert("JSON 格式錯誤：" + e.message);
+      }
+    }
+
+    function importJsonFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('json-paste-input').value = e.target.result;
+        importPastedJson();
+      };
+      reader.readAsText(file);
+    }
+
+    function clearCustomBank() {
+      localStorage.removeItem('ipas_custom_bank');
+      questionBank = [...STARTER_BANK];
+      loadDefaultRemoteBanks();
+      alert("已清除本機自訂快取題庫。");
+    }
+
+    function startQuiz() {
+      const scope = document.querySelector('input[name="scope"]:checked').value;
+      quizMode = document.querySelector('input[name="mode"]:checked').value;
+      const limit = Number(document.getElementById('question-limit').value);
+      const includeDynamic = document.getElementById('include-dynamic').checked;
+
+      let pool = [...questionBank];
+      if (includeDynamic) {
+        pool = [...pool, ...generateDynamicQuestions()];
+      }
+
+      if (scope === '1') pool = pool.filter(q => Number(q.subject) === 1);
+      else if (scope === '2') pool = pool.filter(q => Number(q.subject) === 2);
+      else if (scope === 'wrong') pool = pool.filter(q => wrongIds.has(q.id));
+
+      if (pool.length === 0) {
+        alert(scope === 'wrong' ? "目前錯題本沒有紀錄，請先進行練習！" : "所選範圍目前無題目，請先匯入題庫。");
+        return;
+      }
+
+      // Shuffle
+      pool.sort(() => Math.random() - 0.5);
+      currentQuiz = pool.slice(0, limit);
+      userAnswers = new Array(currentQuiz.length).fill(null);
+      currentIndex = 0;
+
+      document.getElementById('setup-screen').classList.add('hidden');
+      document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById('quiz-screen').classList.remove('hidden');
+
+      startTimer();
+      renderQuestion();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      secondsElapsed = 0;
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        const m = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+        const s = String(secondsElapsed % 60).padStart(2, '0');
+        document.getElementById('timer-display').textContent = `${m}:${s}`;
+      }, 1000);
+    }
+
+    function renderQuestion() {
+      const q = currentQuiz[currentIndex];
+      const total = currentQuiz.length;
+      document.getElementById('q-badge').textContent = Number(q.subject) === 1 ? '科目一｜基礎概論' : '科目二｜盤查規範';
+      document.getElementById('q-category').textContent = q.category || '綜合題型';
+      document.getElementById('q-progress').textContent = `${currentIndex + 1} / ${total}`;
+      document.getElementById('progress-bar').style.width = `${((currentIndex + 1) / total) * 100}%`;
+      document.getElementById('q-id').textContent = `題號：${q.id}`;
+      document.getElementById('q-text').textContent = q.question;
+
+      const container = document.getElementById('options-container');
+      container.innerHTML = '';
+      const chosen = userAnswers[currentIndex];
+      const locked = quizMode === 'instant' && chosen !== null;
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        let classes = 'option-card w-full text-left p-4 rounded-xl border-2 flex items-start gap-3 ';
+        if (locked) {
+          classes += 'disabled cursor-default ';
+          if (idx === q.answer) classes += 'border-emerald-600 bg-emerald-50 text-emerald-950 font-bold';
+          else if (idx === chosen) classes += 'border-rose-500 bg-rose-50 text-rose-950';
+          else classes += 'border-slate-200 bg-white opacity-60';
+        } else {
+          if (idx === chosen) classes += 'border-emerald-600 bg-emerald-50 font-bold';
+          else classes += 'border-slate-200 bg-white';
+        }
+        btn.className = classes;
+        const labels = ['A', 'B', 'C', 'D'];
+        btn.innerHTML = `
+          <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0 ${idx === chosen ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}">${labels[idx]}</span>
+          <span class="text-sm sm:text-base pt-0.5">${opt}</span>
+        `;
+        if (!locked) {
+          btn.onclick = () => selectOption(idx);
+        }
+        container.appendChild(btn);
+      });
+
+      const expBox = document.getElementById('explanation-box');
+      if (locked) {
+        expBox.classList.remove('hidden');
+        const isCorrect = chosen === q.answer;
+        const verdict = document.getElementById('answer-verdict');
+        verdict.textContent = isCorrect ? '✅ 答對了！' : `❌ 答錯了，正確答案為 (${['A','B','C','D'][q.answer]})`;
+        verdict.className = `font-bold text-base mb-1.5 ${isCorrect ? 'text-emerald-700' : 'text-rose-700'}`;
+        document.getElementById('explanation-text').textContent = q.explanation;
+      } else {
+        expBox.classList.add('hidden');
+      }
+
+      document.getElementById('prev-btn').disabled = currentIndex === 0;
+      const isLast = currentIndex === total - 1;
+      document.getElementById('next-btn').classList.toggle('hidden', isLast);
+      document.getElementById('submit-btn').classList.toggle('hidden', !isLast);
+    }
+
+    function selectOption(idx) {
+      userAnswers[currentIndex] = idx;
+      const q = currentQuiz[currentIndex];
+      if (idx !== q.answer) {
+        wrongIds.add(q.id);
+      } else {
+        wrongIds.delete(q.id);
+      }
+      localStorage.setItem('ipas_wrong_ids', JSON.stringify(Array.from(wrongIds)));
+      updateStats();
+      renderQuestion();
+    }
+
+    function prevQuestion() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentIndex < currentQuiz.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      }
+    }
+
+    function quitQuiz() {
+      if (confirm('確定要結束本次測驗並返回設定畫面嗎？')) {
+        clearInterval(timerInterval);
+        resetToSetup();
+      }
+    }
+
+    function resetToSetup() {
+      document.getElementById('quiz-screen').classList.add('hidden');
+      document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById('setup-screen').classList.remove('hidden');
+    }
+
+    function finishQuiz() {
+      clearInterval(timerInterval);
+      let s1Total = 0, s1Correct = 0;
+      let s2Total = 0, s2Correct = 0;
+      let totalCorrect = 0;
+
+      currentQuiz.forEach((q, i) => {
+        const ans = userAnswers[i];
+        const correct = ans === q.answer;
+        if (correct) totalCorrect++;
+        else wrongIds.add(q.id);
+
+        if (Number(q.subject) === 1) {
+          s1Total++;
+          if (correct) s1Correct++;
+        } else {
+          s2Total++;
+          if (correct) s2Correct++;
+        }
+      });
+
+      localStorage.setItem('ipas_wrong_ids', JSON.stringify(Array.from(wrongIds)));
+      updateStats();
+
+      const s1Score = s1Total > 0 ? Math.round((s1Correct / s1Total) * 100) : null;
+      const s2Score = s2Total > 0 ? Math.round((s2Correct / s2Total) * 100) : null;
+      const avgScore = Math.round((totalCorrect / currentQuiz.length) * 100);
+
+      document.getElementById('total-score').textContent = avgScore;
+      document.getElementById('res-s1-score').textContent = s1Score !== null ? `${s1Score} 分 (${s1Correct}/${s1Total})` : '未測驗';
+      document.getElementById('res-s2-score').textContent = s2Score !== null ? `${s2Score} 分 (${s2Correct}/${s2Total})` : '未測驗';
+      document.getElementById('res-summary').textContent = `${totalCorrect}/${currentQuiz.length} 題 (${document.getElementById('timer-display').textContent})`;
+
+      const badge = document.getElementById('pass-badge');
+      const passed = avgScore >= 70 && (s1Score === null || s1Score >= 60) && (s2Score === null || s2Score >= 60);
+      if (passed) {
+        badge.textContent = '🎉 恭喜達成 iPAS 及格標準！';
+        badge.className = 'inline-block px-4 py-1.5 rounded-full text-sm font-black mb-3 bg-emerald-100 text-emerald-800';
+      } else {
+        badge.textContent = '💪 尚未達標，建議針對錯題加強複習';
+        badge.className = 'inline-block px-4 py-1.5 rounded-full text-sm font-black mb-3 bg-amber-100 text-amber-800';
+      }
+
+      const reviewContainer = document.getElementById('review-container');
+      reviewContainer.innerHTML = '';
+      currentQuiz.forEach((q, i) => {
+        const ans = userAnswers[i];
+        const isCorrect = ans === q.answer;
+        const labels = ['A', 'B', 'C', 'D'];
+        const div = document.createElement('div');
+        div.className = `p-4 rounded-xl border ${isCorrect ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50/40'}`;
+        div.innerHTML = `
+          <div class="flex items-center justify-between text-xs font-bold mb-1">
+            <span class="${isCorrect ? 'text-emerald-700' : 'text-rose-700'}">${isCorrect ? '✅ 正確' : '❌ 錯誤'}｜${q.id}（科目${q.subject}）</span>
+            <span class="text-slate-400">${q.category}</span>
+          </div>
+          <div class="font-bold text-slate-900 text-sm mb-2">${i + 1}. ${q.question}</div>
+          <div class="text-xs text-slate-600 mb-1">
+            你的作答：<span class="font-bold">${ans !== null ? `(${labels[ans]}) ${q.options[ans]}` : '未作答'}</span> ｜ 
+            正確答案：<span class="font-bold text-emerald-700">(${labels[q.answer]}) ${q.options[q.answer]}</span>
+          </div>
+          <div class="text-xs text-slate-600 bg-white/80 p-2.5 rounded-lg border border-slate-100 mt-2">
+            <strong>解析：</strong>${q.explanation}
+          </div>
+        `;
+        reviewContainer.appendChild(div);
+      });
+
+      document.getElementById('quiz-screen').classList.add('hidden');
+      document.getElementById('result-screen').classList.remove('hidden');
+    }
+
+    function copyWrongNotes() {
+      const wrongs = currentQuiz.filter((q, i) => userAnswers[i] !== q.answer);
+      if (wrongs.length === 0) {
+        alert("本次全對，沒有錯題需要複製！");
+        return;
+      }
+      const labels = ['A', 'B', 'C', 'D'];
+      const text = wrongs.map((q, idx) => (
+        `${idx + 1}. [${q.id}] ${q.question}
+   正確答案：(${labels[q.answer]}) ${q.options[q.answer]}
+   解析：${q.explanation}`
+      )).join('
+
+');
+      navigator.clipboard.writeText(`【iPAS 初級淨零碳規劃管理師 - 錯題複習筆記】
+
+${text}`);
+      alert(`已複製 ${wrongs.length} 題錯題筆記到剪貼簿！`);
+    }
+
+    // Init
+    (async function init() {
+      questionBank = [...STARTER_BANK];
+      const custom = JSON.parse(localStorage.getItem('ipas_custom_bank') || '[]');
+      if (Array.isArray(custom)) mergeQuestions(custom);
+      await loadDefaultRemoteBanks();
+    })();
+  </script>
+</body>
+</html>
